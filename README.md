@@ -6,7 +6,10 @@ Dieser Prototyp bewertet die Plattformfähigkeit anhand eines gewichteten Fragen
 
 ```bash
 pip install -r requirements.txt
+```
 
 ## Prototypen starten
 
+```bash
 streamlit run app.py
+```
