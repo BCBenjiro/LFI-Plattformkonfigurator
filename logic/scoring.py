@@ -1,3 +1,5 @@
+import re
+
 from data.questions import QUESTIONS, SECTION_WEIGHTS
 
 
@@ -212,6 +214,16 @@ def build_weighting_table(section_scores: dict) -> list[dict]:
     return rows
 
 
+def split_question_title(title: str) -> tuple[str, str]:
+    """Trennt Nummer und Fragentitel für sauberere Tabellen."""
+    match = re.match(r"^([0-9]+(?:\.[0-9]+)?[a-zA-Z]?\.?)\s*(.*)$", title.strip())
+    if not match:
+        return "-", title
+    number = match.group(1).rstrip(".")
+    text = match.group(2).strip()
+    return number, text
+
+
 def build_answer_table(answers: dict) -> list[dict]:
     rows = []
 
@@ -221,9 +233,11 @@ def build_answer_table(answers: dict) -> list[dict]:
             continue
         answer = answers[key]
         score = get_answer_score(answer)
+        number, question_text = split_question_title(question["title"])
         rows.append(
             {
-                "Nr.": question["title"],
+                "Nr.": number,
+                "Frage": question_text,
                 "Bereich": question["section"],
                 "Antwort": get_answer_labels(answer),
                 "Punkte": score if score is not None else "Filter / K.O. / Präferenz",

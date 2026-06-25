@@ -120,13 +120,13 @@ def get_hard_blockers(provider: dict, answers: dict) -> list[str]:
 
     elif provider_id == "lgv":
         if product_group != "fruit_veg":
-            blockers.append("LGV Sonnengemüse passt nur für Gemüse beziehungsweise Obst/Gemüse-Betriebe.")
+            blockers.append("LGV Sonnengemüse passt vor allem für Gemüse- beziehungsweise Obst/Gemüse-Betriebe.")
         if offer_regularity not in ["weekly", "daily"]:
             blockers.append("Für LGV-artige Vermarktung fehlen regelmäßige Mengen.")
 
     elif provider_id == "opst":
         if product_group != "fruit_veg":
-            blockers.append("OPST passt nur für Obstbetriebe; aktuell wird Obst/Gemüse gemeinsam abgefragt.")
+            blockers.append("OPST passt vor allem für Obstbetriebe; die Produktgruppe Obst/Gemüse ist nur eine grobe Vorauswahl.")
         if cooperation_model == "alone":
             blockers.append("OPST ist eine Erzeugerorganisation; dafür braucht es grundsätzlich Kooperations-/Organisationsbereitschaft.")
 
@@ -146,10 +146,10 @@ def get_hard_blockers(provider: dict, answers: dict) -> list[str]:
     return blockers
 
 
-def calculate_provider_fit(provider: dict, answers: dict) -> tuple[float, list[str], list[str]]:
+def calculate_provider_fit(provider: dict, answers: dict) -> tuple[float, int, int, list[str], list[str]]:
     """
     Berechnet den Anbieter-Fit auf Basis der Fit-Regeln.
-    Gibt zurück: Prozentwert, erfüllte Kriterien, nicht erfüllte Fit-Kriterien.
+    Gibt zurück: Prozentwert, erreichte Fit-Punkte, maximale Fit-Punkte, erfüllte Kriterien, nicht erfüllte Fit-Kriterien.
     """
     max_weight = 0
     reached_weight = 0
@@ -168,9 +168,9 @@ def calculate_provider_fit(provider: dict, answers: dict) -> tuple[float, list[s
             missing_reasons.append(rule["reason"])
 
     if max_weight == 0:
-        return 0.0, matched_reasons, missing_reasons
+        return 0.0, 0, 0, matched_reasons, missing_reasons
 
-    return reached_weight / max_weight * 100, matched_reasons, missing_reasons
+    return reached_weight / max_weight * 100, reached_weight, max_weight, matched_reasons, missing_reasons
 
 
 def build_dynamic_actions(provider: dict, answers: dict, blockers: list[str], missing_reasons: list[str]) -> list[str]:
@@ -251,7 +251,7 @@ def match_providers(answers: dict) -> list[dict]:
 
     for provider in PROVIDERS:
         blockers = get_hard_blockers(provider, answers)
-        fit_percent, matched_reasons, missing_reasons = calculate_provider_fit(provider, answers)
+        fit_percent, fit_points, fit_max_points, matched_reasons, missing_reasons = calculate_provider_fit(provider, answers)
         eligible = len(blockers) == 0
         actions = build_dynamic_actions(provider, answers, blockers, missing_reasons)
 
@@ -264,10 +264,14 @@ def match_providers(answers: dict) -> list[dict]:
                 "description": provider["description"],
                 "source_url": provider["source_url"],
                 "cost_model": provider["cost_model"],
+                "logo_url": provider.get("logo_url", ""),
+                "logo_note": provider.get("logo_note", ""),
                 "eligible": eligible,
                 "fit_percent": fit_percent if eligible else 0.0,
                 "potential_fit_percent": fit_percent,
                 "status": provider_status(eligible, fit_percent if eligible else 0.0, fit_percent),
+                "fit_points": fit_points,
+                "fit_max_points": fit_max_points,
                 "blockers": blockers,
                 "matched_reasons": matched_reasons,
                 "missing_reasons": missing_reasons,
