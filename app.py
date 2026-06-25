@@ -26,7 +26,7 @@ from logic.validation import build_validation_warnings
 from logic.report_export import build_export_pdf
 
 # -------------------------------------------------
-# Vertriebskonfigurator Landwirtschaft V2.9
+# Vertriebskonfigurator Landwirtschaft
 # Fokus:
 # - Verkauf landwirtschaftlicher Lebensmittel/Nahrungsmittel
 # - reale Anbieterempfehlungen
